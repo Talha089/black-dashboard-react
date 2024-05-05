@@ -19,8 +19,20 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 
-import AdminLayout from "layouts/Admin/Admin.js";
-import RTLLayout from "layouts/RTL/RTL.js";
+import Admin from "layouts/Admin/Admin.js";
+import Login from "./views/Login/index.js";
+import PrivateRoute from './store/PrivateRoute.js';
+
+
+import { logger } from 'redux-logger';
+import { Provider } from 'react-redux';
+import createSagaMiddleware from 'redux-saga';
+import { createStore, applyMiddleware } from 'redux';
+
+import rootReducer from './store/reducers';
+
+
+
 
 import "assets/scss/black-dashboard-react.scss";
 import "assets/demo/demo.css";
@@ -32,19 +44,30 @@ import BackgroundColorWrapper from "./components/BackgroundColorWrapper/Backgrou
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 
+const sagaMiddleware = createSagaMiddleware();
+const store = createStore(rootReducer, applyMiddleware(sagaMiddleware, logger));
+
 root.render(
-  <ThemeContextWrapper>
-    <BackgroundColorWrapper>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/admin/*" element={<AdminLayout />} />
-          <Route path="/rtl/*" element={<RTLLayout />} />
-          <Route
-            path="*"
-            element={<Navigate to="/admin/dashboard" replace />}
-          />
-        </Routes>
-      </BrowserRouter>
-    </BackgroundColorWrapper>
-  </ThemeContextWrapper>
+  <Provider store={store}>
+    <ThemeContextWrapper>
+
+      <BackgroundColorWrapper>
+        <BrowserRouter>
+          <Routes>
+            <Route
+              path="/home"
+              element={
+                <PrivateRoute>
+                  <Admin />
+                </PrivateRoute>
+              }
+            />
+            <Route path="/login" element={<Login />} />
+            <Route path="/" element={<Navigate to="/login" />} />
+          </Routes>
+        </BrowserRouter>
+      </BackgroundColorWrapper>
+    </ThemeContextWrapper>
+  </Provider>,
+
 );
